@@ -20,6 +20,10 @@ jobs:
   job:
     name: ${{ matrix.os }}-${{ github.workflow }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     strategy:
       fail-fast: false
       matrix:
@@ -31,6 +35,7 @@ jobs:
             triplet: x64-linux
           - os: macos-latest
             triplet: x64-osx
+        language: [ 'cpp' ]
     env:
       # Indicates the location of the vcpkg as a Git submodule of the project repository.
       VCPKG_ROOT: ${{ github.workspace }}/vcpkg
@@ -76,6 +81,12 @@ jobs:
         run: |
           cmake --preset ninja-multiconfiguration-vcpkg
 
+      # Must be initialized before compilation
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
       # Build (Release configuration only) the whole project with Ninja (which is spawn by CMake).
       - name: Build (Release configuration)
         run: |
@@ -85,3 +96,9 @@ jobs:
       - name: Test (Release configuration)
         run: |
           ctest --preset ninja-multiconfiguration-vcpkg --config Release
+
+      # Code analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:${{matrix.language}}"
