@@ -34,3 +34,9 @@
 /vcpkg
 /builds
 .DS_Store
+
+# Ignore vscode files except my custom ones
+/.vscode/*
+!/.vscode/launch.json
+!/.vscode/tasks.json
+!/.vscode/c_cpp_properties.json
